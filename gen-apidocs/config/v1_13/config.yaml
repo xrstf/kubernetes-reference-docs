@@ -190,9 +190,6 @@ resource_categories:
     - name: SubjectAccessReview
       version: v1
       group: authorization
-    - name: TokenRequest
-      version: v1
-      group: authentication
     - name: TokenReview
       version: v1
       group: authentication
