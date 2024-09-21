@@ -18,8 +18,9 @@ package generators
 
 import (
 	"fmt"
-	"github.com/kubernetes-sigs/reference-docs/gen-apidocs/generators/api"
 	"strings"
+
+	"github.com/kubernetes-sigs/reference-docs/gen-apidocs/generators/api"
 )
 
 func PrintInfo(config *api.Config) {

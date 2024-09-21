@@ -41,7 +41,7 @@ type DocWriter interface {
 	WriteDefinitionsOverview() error
 	WriteOrphanedOperationsOverview() error
 	WriteDefinition(d *api.Definition) error
-    WriteOperation(o *api.Operation) error
+	WriteOperation(o *api.Operation) error
 	WriteOldVersionsOverview() error
 	Finalize() error
 }
@@ -96,29 +96,27 @@ func GenerateFiles() error {
 		}
 	}
 
-    // Write orphaned operation endpoints
-    orphanedIDs :=  make([]string, 0)
-    for id, o := range config.Operations {
-        if o.Definition == nil && !config.OpExcluded(o.ID) {
-            orphanedIDs = append(orphanedIDs, id)
-        }
-    }
+	// Write orphaned operation endpoints
+	orphanedIDs := make([]string, 0)
+	for id, o := range config.Operations {
+		if o.Definition == nil && !config.OpExcluded(o.ID) {
+			orphanedIDs = append(orphanedIDs, id)
+		}
+	}
 
-    if len(orphanedIDs) > 0 {
-        if err := writer.WriteOrphanedOperationsOverview(); err != nil {
-            return err
-        }
+	if len(orphanedIDs) > 0 {
+		if err := writer.WriteOrphanedOperationsOverview(); err != nil {
+			return err
+		}
 
-        sort.Strings(orphanedIDs)
+		sort.Strings(orphanedIDs)
 
-        for _, opKey := range orphanedIDs {
-            if err := writer.WriteOperation(config.Operations[opKey]);
-                    err != nil {
-                return err
-            }
-        }
-    }
-
+		for _, opKey := range orphanedIDs {
+			if err := writer.WriteOperation(config.Operations[opKey]); err != nil {
+				return err
+			}
+		}
+	}
 
 	if err := writer.WriteDefinitionsOverview(); err != nil {
 		return err

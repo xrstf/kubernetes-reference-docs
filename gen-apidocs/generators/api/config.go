@@ -263,8 +263,8 @@ func (c *Config) initOperations(specs []*loads.Document) error {
 			if !c.OpExcluded(op.ID) {
 				fmt.Printf("\033[31mNo Definition found for %s [%s].\033[0m\n", op.ID, op.Path)
 			} else {
-                fmt.Printf("Op excluded: %s\n", op.ID)
-            }
+				fmt.Printf("Op excluded: %s\n", op.ID)
+			}
 		}
 	})
 
