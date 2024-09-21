@@ -311,7 +311,7 @@ func (h *HTMLWriter) WriteDefinition(d *api.Definition) error {
 }
 
 func (h *HTMLWriter) WriteOperation(o *api.Operation) error {
-    fn := "_" + operationFileName(o) + ".html"
+	fn := "_" + operationFileName(o) + ".html"
 	path := filepath.Join(api.IncludesDir, fn)
 	f, err := os.Create(path)
 	if err != nil {
@@ -322,12 +322,12 @@ func (h *HTMLWriter) WriteOperation(o *api.Operation) error {
 	nvg := fmt.Sprintf("%s", o.ID)
 	linkID := getLink(nvg)
 
-    oGroup, oVersion, oKind, _ := o.GetGroupVersionKindSub()
-    oApiVersion := api.ApiVersion(oVersion)
+	oGroup, oVersion, oKind, _ := o.GetGroupVersionKindSub()
+	oApiVersion := api.ApiVersion(oVersion)
 
-    if len(oGroup) > 0 {
-        nvg = h.gvkMarkup(oGroup, oApiVersion, oKind)
-    }
+	if len(oGroup) > 0 {
+		nvg = h.gvkMarkup(oGroup, oApiVersion, oKind)
+	}
 
 	fmt.Fprintf(f, "<DIV class=\"operation-container\" id=\"%s\">\n", linkID)
 	defer fmt.Fprint(f, "</DIV>\n")
@@ -342,11 +342,10 @@ func (h *HTMLWriter) WriteOperation(o *api.Operation) error {
 	}
 	h.currentTOCItem.SubSections = append(h.currentTOCItem.SubSections, &item)
 
-    h.WriteOperationBody(f, o, o.ID)
+	h.WriteOperationBody(f, o, o.ID)
 
 	return nil
 }
-
 
 func (h *HTMLWriter) writeSamples(w io.Writer, d *api.Definition) {
 	if d.Sample.Sample == "" {
@@ -482,25 +481,25 @@ func (h *HTMLWriter) writeResponseParams(w io.Writer, o *api.Operation) {
 }
 
 func (h *HTMLWriter) WriteOperationBody(w io.Writer, o *api.Operation, opID string) {
-    if o.Definition != nil {
-        // Example requests
-        requests := o.GetExampleRequests()
-        if len(requests) > 0 {
-            h.writeOperationSample(w, true, opID, requests)
-        }
-        // Example responses
-        responses := o.GetExampleResponses()
-        if len(responses) > 0 {
-            h.writeOperationSample(w, false, opID, responses)
-        }
-    }
+	if o.Definition != nil {
+		// Example requests
+		requests := o.GetExampleRequests()
+		if len(requests) > 0 {
+			h.writeOperationSample(w, true, opID, requests)
+		}
+		// Example responses
+		responses := o.GetExampleResponses()
+		if len(responses) > 0 {
+			h.writeOperationSample(w, false, opID, responses)
+		}
+	}
 
-    fmt.Fprintf(w, "<P>%s</P>\n", o.Description())
-    fmt.Fprintf(w, "<H3>HTTP Request</H3>\n")
-    fmt.Fprintf(w, "<p><CODE>%s</CODE></P>\n", o.GetDisplayHttp())
+	fmt.Fprintf(w, "<P>%s</P>\n", o.Description())
+	fmt.Fprintf(w, "<H3>HTTP Request</H3>\n")
+	fmt.Fprintf(w, "<p><CODE>%s</CODE></P>\n", o.GetDisplayHttp())
 
-    h.writeRequestParams(w, o)
-    h.writeResponseParams(w, o)
+	h.writeRequestParams(w, o)
+	h.writeResponseParams(w, o)
 }
 
 func (h *HTMLWriter) WriteResource(r *api.Resource) error {
@@ -593,7 +592,7 @@ func (h *HTMLWriter) WriteResource(r *api.Resource) error {
 			}
 			ocItem.SubSections = append(ocItem.SubSections, &OPItem)
 
-            h.WriteOperationBody(w, o, opID);
+			h.WriteOperationBody(w, o, opID)
 
 			fmt.Fprint(w, "</DIV>\n")
 		}
@@ -641,17 +640,12 @@ func (h *HTMLWriter) generateIndex(navContent string) error {
 	}
 	defer html.Close()
 
-	/* Make sure the following stylesheets exist in kubernetes/website repo:
-	   kubernetes/website/static/css/bootstrap-5.3.2.min.css
-	   kubernetes/website/static/css/fontawesome-4.7.0.min.css
-	   kubernetes/website/static/css/style_apiref.css
-	*/
 	fmt.Fprintf(html, "<!DOCTYPE html>\n<HTML lang=\"en\">\n<HEAD>\n<META charset=\"UTF-8\">\n")
 	fmt.Fprintf(html, "<TITLE>%s</TITLE>\n", h.TOC.Title)
-	fmt.Fprintf(html, "<LINK rel=\"shortcut icon\" href=\"favicon.ico\" type=\"image/vnd.microsoft.icon\">\n")
-	fmt.Fprintf(html, "<LINK rel=\"stylesheet\" href=\"/css/bootstrap-5.3.2.min.css\" type=\"text/css\">\n")
-	fmt.Fprintf(html, "<LINK rel=\"stylesheet\" href=\"/css/fontawesome-4.7.0.min.css\" type=\"text/css\">\n")
-	fmt.Fprintf(html, "<LINK rel=\"stylesheet\" href=\"/css/style_apiref.css\" type=\"text/css\">\n")
+	fmt.Fprintf(html, "<LINK rel=\"shortcut icon\" href=\"../static/images/favicon.png\" type=\"image/png\">\n")
+	fmt.Fprintf(html, "<LINK rel=\"stylesheet\" href=\"../static/css/bootstrap-5.3.2.min.css\" type=\"text/css\">\n")
+	fmt.Fprintf(html, "<LINK rel=\"stylesheet\" href=\"../static/css/fontawesome-4.7.0.min.css\" type=\"text/css\">\n")
+	fmt.Fprintf(html, "<LINK rel=\"stylesheet\" href=\"../static/css/style_apiref.css\" type=\"text/css\">\n")
 	fmt.Fprintf(html, "</HEAD>\n<BODY class=\"theme-auto\">\n")
 	fmt.Fprintf(html, "<DIV id=\"wrapper\" class=\"container-fluid\">\n")
 	fmt.Fprintf(html, "<DIV class=\"row\">\n")
@@ -707,21 +701,14 @@ func (h *HTMLWriter) generateIndex(navContent string) error {
 		}
 	}
 
-	/*
-		Make sure the following scripts exist in kubernetes/website repo:
-		kubernetes/website/static/js/jquery-3.6.0.min.js
-		kubernetes/website/static/js/jquery.scrollTo-2.1.3.min.js
-		kubernetes/website/static/js/bootstrap-5.3.2.min.js
-		kubernetes/website/static/js/apiref.js
-	*/
 	fmt.Fprintf(html, "%s</DIV>\n", navContent)
 	fmt.Fprintf(html, "<DIV id=\"page-content-wrapper\" class=\"col-xs-8 offset-xs-4 col-sm-9 offset-sm-3 col-md-10 offset-md-2 body-content\">\n")
 	fmt.Fprintf(html, "%s", string(buf))
 	fmt.Fprintf(html, "\n</DIV>\n</DIV>\n</DIV>\n")
-	fmt.Fprintf(html, "<SCRIPT src=\"/js/jquery-3.6.0.min.js\"></SCRIPT>\n")
-	fmt.Fprintf(html, "<SCRIPT src=\"/js/jquery.scrollTo-2.1.3.min.js\"></SCRIPT>\n")
-	fmt.Fprintf(html, "<SCRIPT src=\"/js/bootstrap-5.3.2.min.js\"></SCRIPT>\n")
-	fmt.Fprintf(html, "<SCRIPT src=\"/js/apiref.js\"></SCRIPT>\n")
+	fmt.Fprintf(html, "<SCRIPT src=\"../static/js/jquery-3.6.0.min.js\"></SCRIPT>\n")
+	fmt.Fprintf(html, "<SCRIPT src=\"../static/js/jquery.scrollTo-2.1.3.min.js\"></SCRIPT>\n")
+	fmt.Fprintf(html, "<SCRIPT src=\"../static/js/bootstrap-5.3.2.min.js\"></SCRIPT>\n")
+	fmt.Fprintf(html, "<SCRIPT src=\"../static/js/apiref.js\"></SCRIPT>\n")
 	fmt.Fprintf(html, "</BODY>\n</HTML>\n")
 
 	return nil
