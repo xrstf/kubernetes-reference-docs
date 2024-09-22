@@ -17,6 +17,7 @@ limitations under the License.
 package api
 
 import (
+	"html/template"
 	"regexp"
 	"strconv"
 	"strings"
@@ -196,10 +197,9 @@ type Definition struct {
 	ShowGroup bool
 
 	// Api version of the definition (e.g. v1beta1)
-	Version                 ApiVersion
-	Kind                    ApiKind
-	DescriptionWithEntities string
-	GroupFullName           string
+	Version       ApiVersion
+	Kind          ApiKind
+	GroupFullName string
 
 	// InToc is true if this definition should appear in the table of contents
 	InToc        bool
@@ -261,10 +261,9 @@ type Config struct {
 }
 
 type Field struct {
-	Name                    string
-	Type                    string
-	Description             string
-	DescriptionWithEntities string
+	Name        string
+	Type        string
+	Description string
 
 	Definition *Definition // Optional Definition for complex types
 
@@ -286,12 +285,13 @@ func (f Field) Link() string {
 	}
 }
 
-func (f Field) FullLink() string {
+func (f Field) FullLink() template.HTML {
+	link := f.Type
 	if f.Definition != nil {
-		return strings.ReplaceAll(f.Type, f.Definition.Name, f.Definition.HrefLink())
-	} else {
-		return f.Type
+		link = strings.ReplaceAll(f.Type, f.Definition.Name, string(f.Definition.HrefLink()))
 	}
+
+	return template.HTML(link)
 }
 
 // Operation defines a highlevel operation type such as Read, Replace, Patch
@@ -307,6 +307,20 @@ type ExampleText struct {
 	Type string
 	Text string
 	Msg  string
+}
+
+func (t ExampleText) SampleType() string {
+	return strings.Split(t.Tab, ":")[1]
+}
+
+func (t ExampleText) LinkID(def *Definition) string {
+	return t.SampleType() + "-" + def.LinkID()
+}
+
+func (t ExampleText) CodeLanguage() string {
+	lType := strings.Split(t.Type, ":")[1]
+
+	return strings.Split(lType, "_")[1]
 }
 
 type HttpResponse struct {
@@ -332,6 +346,10 @@ type Operation struct {
 	ExampleConfig ExampleConfig
 }
 
+func (o Operation) TocID(def *Definition) string {
+	return strings.ReplaceAll(strings.ToLower(o.Type.Name), " ", "-") + "-" + def.LinkID()
+}
+
 type Operations map[string]*Operation
 
 // OperationCategory defines a group of related operations
@@ -344,6 +362,10 @@ type OperationCategory struct {
 	Default bool `yaml:",omitempty"`
 
 	Operations []*Operation
+}
+
+func (c OperationCategory) TocID(def *Definition) string {
+	return strings.ReplaceAll(strings.ToLower(c.Name), " ", "-") + "-" + def.LinkID()
 }
 
 type ExampleProvider interface {
@@ -369,13 +391,9 @@ type Resource struct {
 	Group   string `yaml:",omitempty"`
 
 	// DescriptionWarning is a warning message to show along side this resource when displaying it
-	DescriptionWarning string `yaml:"description_warning,omitempty"`
+	DescriptionWarning template.HTML `yaml:"description_warning,omitempty"`
 	// DescriptionNote is a note message to show along side this resource when displaying it
-	DescriptionNote string `yaml:"description_note,omitempty"`
-	// ConceptGuide is a link to the concept guide for this resource if it exists
-	ConceptGuide string `yaml:"concept_guide,omitempty"`
-	// RelatedTasks is as list of tasks related to this concept
-	RelatedTasks []string `yaml:"related_tasks,omitempty"`
+	DescriptionNote template.HTML `yaml:"description_note,omitempty"`
 
 	// Definition of the object
 	Definition *Definition
@@ -394,12 +412,10 @@ type ResourceCategory struct {
 }
 
 type ExampleConfig struct {
-	Name         string `yaml:",omitempty"`
-	Namespace    string `yaml:",omitempty"`
-	Request      string `yaml:",omitempty"`
-	Response     string `yaml:",omitempty"`
-	RequestNote  string `yaml:",omitempty"`
-	ResponseNote string `yaml:",omitempty"`
+	Name      string `yaml:",omitempty"`
+	Namespace string `yaml:",omitempty"`
+	Request   string `yaml:",omitempty"`
+	Response  string `yaml:",omitempty"`
 }
 
 type SampleConfig struct {

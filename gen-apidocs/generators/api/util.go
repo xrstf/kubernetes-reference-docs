@@ -99,13 +99,13 @@ func IsDefinition(s spec.Schema) bool {
 }
 
 // handle '*', 'a/*', '*/b', '*/*' cases
-func EscapeAsterisks(des string) string {
-	s := strings.ReplaceAll(des, "'*'", `'\*'`)
-	s = strings.ReplaceAll(s, "/*'", `/\*'`)
-	s = strings.ReplaceAll(s, "'*/", `'\*/`)
-	s = strings.ReplaceAll(s, "'*/*'", `'\*/\*'`)
-	return s
-}
+// func EscapeAsterisks(des string) string {
+// 	s := strings.ReplaceAll(des, "'*'", `'\*'`)
+// 	s = strings.ReplaceAll(s, "/*'", `/\*'`)
+// 	s = strings.ReplaceAll(s, "'*/", `'\*/`)
+// 	s = strings.ReplaceAll(s, "'*/*'", `'\*/\*'`)
+// 	return s
+// }
 
 // IsComplex returns true if the schema is for a complex (non-primitive) definitions
 func IsComplex(schema spec.Schema) bool {

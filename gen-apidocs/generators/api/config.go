@@ -19,7 +19,6 @@ package api
 import (
 	"flag"
 	"fmt"
-	"html"
 	"log"
 	"os"
 	"path/filepath"
@@ -100,9 +99,6 @@ func NewConfig() (*Config, error) {
 	if err := config.initOperations(specs); err != nil {
 		return nil, fmt.Errorf("failed to init operations: %w", err)
 	}
-
-	// replace unicode escape sequences with HTML entities.
-	config.escapeDescriptions()
 
 	config.CleanUp()
 
@@ -615,36 +611,6 @@ func (c *Config) mapOperationsToDefinitions() error {
 	}
 
 	return nil
-}
-
-// The OpenAPI spec has escape sequences like \u003c. When the spec is unmarshaled,
-// the escape sequences get converted to ordinary characters. For example,
-// \u003c gets converted to a regular < character. But we can't use  regular <
-// and > characters in our HTML document. This function replaces these regular
-// characters with HTML entities: <, >, &, ', and ".
-func (c *Config) escapeDescriptions() {
-	for _, d := range c.Definitions.All {
-		d.DescriptionWithEntities = html.EscapeString(d.Description())
-
-		for _, f := range d.Fields {
-			f.DescriptionWithEntities = html.EscapeString(f.Description)
-		}
-	}
-
-	for _, op := range c.Operations {
-		for _, p := range op.BodyParams {
-			p.DescriptionWithEntities = html.EscapeString(p.Description)
-		}
-		for _, p := range op.QueryParams {
-			p.DescriptionWithEntities = html.EscapeString(p.Description)
-		}
-		for _, p := range op.PathParams {
-			p.DescriptionWithEntities = html.EscapeString(p.Description)
-		}
-		for _, r := range op.HttpResponses {
-			r.DescriptionWithEntities = html.EscapeString(r.Description)
-		}
-	}
 }
 
 // For each resource in the ToC, look up its definition and visit it.

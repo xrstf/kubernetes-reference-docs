@@ -18,6 +18,7 @@ package api
 
 import (
 	"fmt"
+	"html/template"
 	"os"
 	"path/filepath"
 	"sort"
@@ -227,7 +228,7 @@ func (s *Definitions) InitializeFields(d *Definition) {
 		f := &Field{
 			Name:        fieldName,
 			Type:        GetTypeName(property),
-			Description: EscapeAsterisks(des),
+			Description: des,
 		}
 		if len(property.Extensions) > 0 {
 			if ps, ok := property.Extensions.GetString(patchStrategyKey); ok {
@@ -270,24 +271,24 @@ func (d *Definition) MdLink() string {
 	return fmt.Sprintf("[%s](#%s-%s-%s)", d.Name, strings.ToLower(d.Name), d.Version, groupName)
 }
 
-func (d *Definition) HrefLink() string {
+func (d *Definition) HrefLink() template.HTML {
 	groupName := strings.ReplaceAll(strings.ToLower(d.GroupFullName), ".", "-")
-	return fmt.Sprintf("<a href=\"#%s-%s-%s\">%s</a>", strings.ToLower(d.Name), d.Version, groupName, d.Name)
+	return template.HTML(fmt.Sprintf(`<a href="#%s-%s-%s">%s</a>`, strings.ToLower(d.Name), d.Version, groupName, d.Name))
 }
 
-func (d *Definition) FullHrefLink() string {
+func (d *Definition) FullHrefLink() template.HTML {
 	groupName := strings.ReplaceAll(strings.ToLower(d.GroupFullName), ".", "-")
-	return fmt.Sprintf("<a href=\"#%s-%s-%s\">%s [%s/%s]</a>", strings.ToLower(d.Name),
-		d.Version, groupName, d.Name, d.Group, d.Version)
+	return template.HTML(fmt.Sprintf(`<a href="#%s-%s-%s">%s [%s/%s]</a>`, strings.ToLower(d.Name),
+		d.Version, groupName, d.Name, d.Group, d.Version))
 }
 
-func (d *Definition) VersionLink() string {
+func (d *Definition) VersionLink() template.HTML {
 	groupName := strings.ReplaceAll(strings.ToLower(d.GroupFullName), ".", "-")
-	return fmt.Sprintf("<a href=\"#%s-%s-%s\">%s</a>", strings.ToLower(d.Name), d.Version, groupName, d.Version)
+	return template.HTML(fmt.Sprintf(`<a href="#%s-%s-%s">%s</a>`, strings.ToLower(d.Name), d.Version, groupName, d.Version))
 }
 
 func (d *Definition) Description() string {
-	return EscapeAsterisks(d.schema.Description)
+	return d.schema.Description
 }
 
 func (d *Definition) GetResourceName() string {

@@ -322,3 +322,8 @@ body.theme-dark pre {
 body.theme-dark .alert a {
   color: #3371e3;
 }
+
+table.fields code,
+table.parameters code {
+  white-space: nowrap;
+}

@@ -18,11 +18,12 @@ package generators
 
 import (
 	"fmt"
+	"html/template"
+	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/kubernetes-sigs/reference-docs/gen-apidocs/generators/api"
 )
@@ -32,8 +33,6 @@ type Doc struct {
 }
 
 type DocWriter interface {
-	Extension() string
-	DefaultStaticContent(title string) string
 	WriteOverview() error
 	WriteAPIGroupVersions(gvs api.GroupVersions) error
 	WriteResourceCategory(name, file string) error
@@ -59,17 +58,17 @@ func GenerateFiles() error {
 		return err
 	}
 
-	copyright_tmpl := "<a href=\"https://github.com/kubernetes/kubernetes\">Copyright 2016-%s The Kubernetes Authors.</a>"
-	now := time.Now().Format("2006")
-	copyright := fmt.Sprintf(copyright_tmpl, now)
 	var title string
-	if !*api.BuildOps {
-		title = "Kubernetes Resource Reference Docs"
-	} else {
+	if *api.BuildOps {
 		title = "Kubernetes API Reference Docs"
+	} else {
+		title = "Kubernetes Resource Reference Docs"
 	}
 
-	writer := NewHTMLWriter(config, copyright, title)
+	writer, err := NewHTMLWriter(config, title)
+	if err != nil {
+		return err
+	}
 	if err := writer.WriteOverview(); err != nil {
 		return err
 	}
@@ -87,7 +86,7 @@ func GenerateFiles() error {
 
 		for _, r := range c.Resources {
 			if r.Definition == nil {
-				fmt.Printf("Warning: Missing definition for item in TOC %s\n", r.Name)
+				log.Printf("Warning: Missing definition for item in TOC %s", r.Name)
 				continue
 			}
 			if err := writer.WriteResource(r); err != nil {
@@ -169,29 +168,30 @@ func GenerateFiles() error {
 }
 
 func ensureDirectories() error {
-	if err := os.MkdirAll(api.BuildDir, os.FileMode(0700)); err != nil {
+	if err := os.MkdirAll(api.BuildDir, os.FileMode(0755)); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(api.IncludesDir, os.FileMode(0700)); err != nil {
+	if err := os.MkdirAll(api.IncludesDir, os.FileMode(0755)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
+func generatedFileName(name string) string {
+	return fmt.Sprintf("_generated_%s.html", strings.ToLower(strings.ReplaceAll(name, ".", "_")))
+}
+
 func definitionFileName(d *api.Definition) string {
-	name := "generated_" + strings.ToLower(strings.ReplaceAll(d.Name, ".", "_"))
-	return fmt.Sprintf("%s_%s_%s_definition", name, d.Version, d.Group)
+	return generatedFileName(fmt.Sprintf("%s_%s_%s_definition", d.Name, d.Version, d.Group))
 }
 
 func operationFileName(o *api.Operation) string {
-	name := "generated_" + strings.ToLower(strings.ReplaceAll(o.ID, ".", "_"))
-	return fmt.Sprintf("%s_operation", name)
+	return generatedFileName(fmt.Sprintf("%s_operation", o.ID))
 }
 
 func conceptFileName(d *api.Definition) string {
-	name := "generated_" + strings.ToLower(strings.ReplaceAll(d.Name, ".", "_"))
-	return fmt.Sprintf("%s_%s_%s_concept", name, d.Version, d.Group)
+	return generatedFileName(fmt.Sprintf("%s_%s_%s_concept", d.Name, d.Version, d.Group))
 }
 
 func getLink(s string) string {
@@ -199,7 +199,7 @@ func getLink(s string) string {
 	return strings.ToLower(strings.ReplaceAll(tmp, " ", "-"))
 }
 
-func writeStaticFile(filename, defaultContent string) error {
+func writeStaticFile(filename string, defaultContent template.HTML) error {
 	src := filepath.Join(api.SectionsDir, filename)
 	dst := filepath.Join(api.IncludesDir, filename)
 
@@ -209,10 +209,10 @@ func writeStaticFile(filename, defaultContent string) error {
 		if err != nil {
 			return err
 		}
-		defaultContent = string(content)
+		defaultContent = template.HTML(content)
 	}
 
-	fmt.Printf("Creating file %s\n", dst)
+	log.Printf("Creating file %s…", dst)
 
 	return os.WriteFile(dst, []byte(defaultContent), 0644)
 }
